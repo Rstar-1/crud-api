@@ -25,8 +25,8 @@ app.use(cors());
 // Import Routes
 mainroute(app);
 
-// PORT Set
-const PORT = process.env.PORT || 8080;
+// // PORT Set
+// const PORT = process.env.PORT || 8080;
 
 // Create Server
 app.get("/", (req, res) => {
@@ -40,4 +40,4 @@ app.get("/", (req, res) => {
 
 // Export for Vercel
 module.exports = app;
-module.exports.handler = serverless(app);
+module.exports.handler = require("serverless-http")(app);
