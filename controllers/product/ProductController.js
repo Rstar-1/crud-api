@@ -1,8 +1,8 @@
 const productService = require("../../services/product/ProductService");
 
-exports.productadddata = async function (req, res) {
+exports.createproduct = async function (req, res) {
   try {
-    var users = await productService.productadddata(req, res);
+    var users = await productService.createproduct(req, res);
 
     return res.status(200).json({
       status: 200,
@@ -14,9 +14,9 @@ exports.productadddata = async function (req, res) {
   }
 };
 
-exports.productgetdata = async function (req, res) {
+exports.getproduct = async function (req, res) {
   try {
-    var users = await productService.productgetdata(req, res);
+    var users = await productService.getproduct(req, res);
 
     return res.status(200).json({
       status: 200,
@@ -28,9 +28,9 @@ exports.productgetdata = async function (req, res) {
   }
 };
 
-exports.productpaginationdata = async function (req, res) {
+exports.singleproduct = async function (req, res) {
   try {
-    var users = await productService.productpaginationdata(req, res);
+    var users = await productService.singleproduct(req, res);
 
     return res.status(200).json({
       status: 200,
@@ -42,9 +42,9 @@ exports.productpaginationdata = async function (req, res) {
   }
 };
 
-exports.productsingledata = async function (req, res) {
+exports.updateproduct = async function (req, res) {
   try {
-    var users = await productService.productsingledata(req, res);
+    var users = await productService.updateproduct(req, res);
 
     return res.status(200).json({
       status: 200,
@@ -56,9 +56,9 @@ exports.productsingledata = async function (req, res) {
   }
 };
 
-exports.productupdatedata = async function (req, res) {
+exports.statusproduct = async function (req, res) {
   try {
-    var users = await productService.productupdatedata(req, res);
+    var users = await productService.statusproduct(req, res);
 
     return res.status(200).json({
       status: 200,
@@ -70,9 +70,9 @@ exports.productupdatedata = async function (req, res) {
   }
 };
 
-exports.productdeletedata = async function (req, res) {
+exports.deleteproduct = async function (req, res) {
   try {
-    var users = await productService.productdeletedata(req, res);
+    var users = await productService.deleteproduct(req, res);
 
     return res.status(200).json({
       status: 200,
