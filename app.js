@@ -3,9 +3,6 @@ const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
 
-// For Vercel
-const serverless = require("serverless-http"); 
-
 // ENV Setup
 dotenv.config({ path: ".env" });
 
@@ -25,8 +22,8 @@ app.use(cors());
 // Import Routes
 mainroute(app);
 
-// // PORT Set
-// const PORT = process.env.PORT || 8080;
+// PORT Set
+const PORT = process.env.PORT || 8080;
 
 // Create Server
 app.get("/", (req, res) => {
@@ -34,10 +31,6 @@ app.get("/", (req, res) => {
 });
 
 // PORT 8000
-// app.listen(PORT, () => {
-//   console.log(`Server On ${PORT}`);
-// });
-
-// Export for Vercel
-module.exports = app;
-module.exports.handler = require("serverless-http")(app);
+app.listen(PORT, () => {
+  console.log(`Server On ${PORT}`);
+});
