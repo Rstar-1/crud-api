@@ -1,22 +1,22 @@
 const Controller = require("../../controllers");
 
 module.exports = function (app) {
-  app.post("/productadddata", Controller.Productontroller.productadddata);
-  app.get("/productgetdata", Controller.Productontroller.productgetdata);
-  app.post(
-    "/productpaginationdata",
-    Controller.Productontroller.productpaginationdata
-  );
+  app.post("/createproduct", Controller.Productontroller.createproduct);
+  app.get("/getproduct", Controller.Productontroller.getproduct);
   app.get(
-    "/productsingledata/:id",
-    Controller.Productontroller.productsingledata
+    "/singleproduct/:id",
+    Controller.Productontroller.singleproduct
   );
   app.patch(
-    "/productupdatedata/:id",
-    Controller.Productontroller.productupdatedata
+    "/updateproduct/:id",
+    Controller.Productontroller.updateproduct
+  );
+  app.patch(
+    "/statusproduct/:id",
+    Controller.Productontroller.statusproduct
   );
   app.delete(
-    "/productdeletedata/:id",
-    Controller.Productontroller.productdeletedata
+    "/deleteproduct/:id",
+    Controller.Productontroller.deleteproduct
   );
 };
