@@ -1,11 +1,15 @@
 const express = require("express");
 const router = express.Router();
 
-// ----------------------------- Product ----------------------------- //
+// ----------------------------- API ----------------------------- //
 const ProductRoute = require("./product/ProductRoute");
-// ----------------------------- Product ----------------------------- //
+// ----------------------------- API ----------------------------- //
+// ----------------------------- Logs ----------------------------- //
+const LogRoute = require("./log/LogRoute");
+// ----------------------------- Logs ----------------------------- //
 
 module.exports = function(app) {
  app.use("/api", router)
  ProductRoute(router);
+ LogRoute(router);
 }
