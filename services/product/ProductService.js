@@ -1,7 +1,8 @@
 const product = require("../../models/product/ProductSchema");
+const log = require('../../models/log/LogSchema'); 
 
-// Product add
-exports.productadddata = async (req, res) => {
+// Product Create
+exports.createproduct = async (req, res) => {
   const { sectionid, sectionname, cmsdata } = req.body;
   try {
     const adduser = new product({
@@ -9,89 +10,120 @@ exports.productadddata = async (req, res) => {
       sectionname,
       cmsdata,
     });
-
     await adduser.save();
+    await log.create({
+      title: adduser.sectionname,
+      status: "SUCCESS",
+      message: `Product created: ${adduser._id}`,
+    });
     res.status(201).json(adduser);
-
     //console.log(adduser, "productadddata");
   } catch (error) {
+    await log.create({
+      title: adduser.sectionname,
+      status: "FAILURE",
+      message: `Error: ${error.message}`,
+    });
     res.status(422).json(error);
   }
 };
 
-// Product all data
-exports.productgetdata = async (req, res) => {
+// Product Get
+exports.getproduct = async (req, res) => {
   try {
-    const userdata = await product.find();
-    res.status(201).json(userdata);
-
-    // console.log(userdata, "productalldata");
-  } catch (error) {
-    res.status(422).json(error);
-  }
-};
-
-// Product pagination all data
-exports.productpaginationdata = async (req, res) => {
-  try {
-    const { offset, search } = req.body;
-    const searchObject = {};
-
+    const {
+      offset = 0,
+      search = "",
+      select = "",
+      live = true,
+      pagination = true,
+    } = req.body;
+    const searchObject = { category: select, status: live };
     if (search) {
-      Object.assign(searchObject, {
-        cmsdata: {
-          $regex: `${search.toString().trim()}`,
-          $options: "i",
-        },
-      });
+      const regex = new RegExp(search.toString().trim(), "i");
+      const searchableFields = Object.keys(product.schema.paths).filter(
+        (field) => !["_id", "__v"].includes(field)
+      );
+      searchObject.$or = searchableFields.map((field) => ({ [field]: regex }));
     }
-    const cmsstore = await product.find(searchObject).skip(offset).limit(6);
-    const totalCount = await product.countDocuments(searchObject);
-    res.json({ cmsstore, totalCount });
+    if (pagination === true) {
+      const productstore = await product
+        .find(searchObject)
+        .skip(parseInt(offset, 10))
+        .limit(6);
+      const totalCount = await product.countDocuments(searchObject);
+      res.json({ productstore, totalCount });
+    } else {
+      const productstore = await product.find(searchObject);
+      const totalCount = await product.countDocuments(searchObject);
+      res.json({ productstore, totalCount });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// Product single data
-exports.productsingledata = async (req, res) => {
+// Product Single
+exports.singleproduct = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const userindividual = await product.findById({ _id: id });
-    res.status(201).json(userindividual);
-
+    const individual = await product.findById({ _id: id });
+    res.status(201).json(individual);
     //console.log(userindividual, "productsingledata");
   } catch (error) {
     res.status(422).json(error);
   }
 };
 
-// Product update data
-exports.productupdatedata = async (req, res) => {
+// Product Update
+exports.updateproduct = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const updateduser = await product.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-
-    //console.log(updateduser, "productupdatedata");
-    res.status(201).json(updateduser);
+    const updates = await mine.findByIdAndUpdate(
+      id,
+      {
+        sectionid: req.body.sectionid,
+        sectionname: req.body.sectionname,
+        cmsdata: req.body.cmsdata,
+      },
+      {
+        new: true,
+      }
+    );
+    //console.log(updates, "productupdatedata");
+    res.status(201).json(updates);
   } catch (error) {
     res.status(422).json(error);
   }
 };
 
-// Product delete data
-exports.productdeletedata = async (req, res) => {
+// Product status
+exports.statusproduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const active = await mine.findByIdAndUpdate(
+      id,
+      {
+        status: req.body.status,
+      },
+      {
+        new: true,
+      }
+    );
+    //console.log(active, "statusproduct");
+    res.status(201).json(active);
+  } catch (error) {
+    res.status(422).json(error);
+  }
+};
 
-    const deletuser = await product.findByIdAndDelete({ _id: id });
-    res.status(201).json(deletuser);
-
-    //console.log(deletuser, "productdeletedata");
+// Product Delete
+exports.deleteproduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const trash = await product.findByIdAndDelete({ _id: id });
+    res.status(201).json(trash);
+    //console.log(trash, "productdeletedata");
   } catch (error) {
     res.status(422).json(error);
   }
