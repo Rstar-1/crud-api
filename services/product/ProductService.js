@@ -1,5 +1,5 @@
 const product = require("../../models/product/ProductSchema");
-const log = require('../../models/log/LogSchema'); 
+const log = require("../../models/log/LogSchema");
 
 // Product Create
 exports.createproduct = async (req, res) => {
@@ -34,18 +34,43 @@ exports.getproduct = async (req, res) => {
     const {
       offset = 0,
       search = "",
-      select = "",
-      live = true,
+      searchsectionname = "",
+      searchsectionid = "",
+      searchcmsdata = "",
       pagination = true,
     } = req.body;
-    const searchObject = { category: select, status: live };
-    if (search) {
-      const regex = new RegExp(search.toString().trim(), "i");
-      const searchableFields = Object.keys(product.schema.paths).filter(
-        (field) => !["_id", "__v"].includes(field)
-      );
-      searchObject.$or = searchableFields.map((field) => ({ [field]: regex }));
+    const searchObject = { status: true };
+    if (search.trim()) {
+      const terms = search.toString().trim().split(/\s+/);
+
+      // Get all paths (keys) from the schema excluding __v, _id, etc.
+      const schemaPaths = Object.entries(product.schema.paths)
+        .filter(
+          ([key, value]) =>
+            (value.instance === "String" || value.instance === "Number") &&
+            !["_id", "__v"].includes(key)
+        )
+        .map(([key]) => key);
+
+      searchObject.$and = terms.map((term) => ({
+        $or: schemaPaths.map((field) => ({
+          [field]: { $regex: term, $options: "i" },
+        })),
+      }));
     }
+    const fieldSearchMap = {
+      sectionname: searchsectionname,
+      sectionid: searchsectionid,
+      cmsdata: searchcmsdata,
+    };
+    Object.entries(fieldSearchMap).forEach(([key, val]) => {
+      if (val?.trim()) {
+        searchObject[key] = {
+          $regex: val.toString().trim(),
+          $options: "i",
+        };
+      }
+    });
     if (pagination === true) {
       const productstore = await product
         .find(searchObject)
@@ -58,8 +83,9 @@ exports.getproduct = async (req, res) => {
       const totalCount = await product.countDocuments(searchObject);
       res.json({ productstore, totalCount });
     }
+    res.json({ productstore, totalCount });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message || "Server error" });
   }
 };
 
@@ -79,7 +105,7 @@ exports.singleproduct = async (req, res) => {
 exports.updateproduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = await mine.findByIdAndUpdate(
+    const updates = await product.findByIdAndUpdate(
       id,
       {
         sectionid: req.body.sectionid,
@@ -101,7 +127,7 @@ exports.updateproduct = async (req, res) => {
 exports.statusproduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const active = await mine.findByIdAndUpdate(
+    const active = await product.findByIdAndUpdate(
       id,
       {
         status: req.body.status,
