@@ -2,7 +2,7 @@ const Controller = require("../../controllers");
 
 module.exports = function (app) {
   app.post("/createproduct", Controller.Productontroller.createproduct);
-  app.get("/getproduct", Controller.Productontroller.getproduct);
+  app.post("/getproduct", Controller.Productontroller.getproduct);
   app.get(
     "/singleproduct/:id",
     Controller.Productontroller.singleproduct
