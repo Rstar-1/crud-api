@@ -34,55 +34,52 @@ exports.getproduct = async (req, res) => {
     const {
       offset = 0,
       search = "",
-      searchsectionname = "",
-      searchsectionid = "",
-      searchcmsdata = "",
+      searchFilters = [],
+      statusFilter = "true",
       pagination = true,
+      sortKey = "",
+      sortDirection = "",
     } = req.body;
-    const searchObject = { status: true };
+    const searchObject = {};
+    if (statusFilter === "true") searchObject.status = true;
+    else if (statusFilter === "false") searchObject.status = false;
+
     if (search.trim()) {
-      const terms = search.toString().trim().split(/\s+/);
+      const terms = search.trim().split(/\s+/);
+      const fields = Object.entries(product.schema.paths)
+        .filter(([k, v]) => (["String", "Number"].includes(v.instance)) && !["_id", "__v"].includes(k))
+        .map(([k]) => k);
 
-      // Get all paths (keys) from the schema excluding __v, _id, etc.
-      const schemaPaths = Object.entries(product.schema.paths)
-        .filter(
-          ([key, value]) =>
-            (value.instance === "String" || value.instance === "Number") &&
-            !["_id", "__v"].includes(key)
-        )
-        .map(([key]) => key);
-
-      searchObject.$and = terms.map((term) => ({
-        $or: schemaPaths.map((field) => ({
-          [field]: { $regex: term, $options: "i" },
-        })),
+      searchObject.$and = terms.map(term => ({
+        $or: fields.map(field => ({ [field]: { $regex: term, $options: "i" } })),
       }));
     }
-    const fieldSearchMap = {
-      sectionname: searchsectionname,
-      sectionid: searchsectionid,
-      cmsdata: searchcmsdata,
-    };
-    Object.entries(fieldSearchMap).forEach(([key, val]) => {
-      if (val?.trim()) {
-        searchObject[key] = {
-          $regex: val.toString().trim(),
-          $options: "i",
-        };
+
+    searchFilters.forEach(({ field, value }) => {
+      if (field && value?.trim()) {
+        searchObject[field] = { $regex: value.trim(), $options: "i" };
       }
     });
-    if (pagination === true) {
-      const productstore = await product
-        .find(searchObject)
-        .skip(parseInt(offset, 10))
-        .limit(6);
-      const totalCount = await product.countDocuments(searchObject);
-      res.json({ productstore, totalCount });
-    } else {
-      const productstore = await product.find(searchObject);
-      const totalCount = await product.countDocuments(searchObject);
-      res.json({ productstore, totalCount });
+    const query = product.find(searchObject);
+    if (sortKey) {
+      const sortOrder = sortDirection === "desc" ? -1 : 1;
+      const fieldType = product.schema.path(sortKey)?.instance;
+
+      if (fieldType === "String") {
+        query.collation({ locale: 'en', strength: 2 }); // case-insensitive sort
+      }
+
+      query.sort({ [sortKey]: sortOrder });
     }
+    if (pagination === true || pagination === "true") {
+      query.skip(Number(offset)).limit(6);
+    }
+
+    const [productstore, totalCount] = await Promise.all([
+      query.exec(),
+      product.countDocuments(searchObject),
+    ]);
+
     res.json({ productstore, totalCount });
   } catch (err) {
     res.status(500).json({ error: err.message || "Server error" });
