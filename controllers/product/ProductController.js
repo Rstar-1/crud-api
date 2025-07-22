@@ -83,3 +83,17 @@ exports.deleteproduct = async function (req, res) {
     error;
   }
 };
+
+exports.bulkdeleteproduct = async function (req, res) {
+  try {
+    var users = await productService.bulkdeleteproduct(req, res);
+
+    return res.status(200).json({
+      status: 200,
+      data: users,
+      message: "Record data successfully",
+    });
+  } catch (error) {
+    error;
+  }
+};
