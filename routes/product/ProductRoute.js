@@ -19,4 +19,8 @@ module.exports = function (app) {
     "/deleteproduct/:id",
     Controller.Productontroller.deleteproduct
   );
+  app.delete(
+    "/bulkdeleteproduct",
+    Controller.Productontroller.bulkdeleteproduct
+  );
 };
