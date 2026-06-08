@@ -1,0 +1,1839 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+const items = [
+  {
+    id: "01.",
+    title: "WEB DESIGN",
+    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&auto=format&fit=crop",
+    color: "#FFD54F",
+    description: "We create visually stunning, user-centric website designs that capture your brand's essence and engage your audience effectively. Our designs are custom-crafted, completely responsive across all desktop and mobile viewports, and meticulously optimized to convert visitors into loyal customers.",
+    tags: ["Creative", "UI/UX", "Figma"]
+  },
+  {
+    id: "02.",
+    title: "PRODUCT DESIGN",
+    image: "https://images.unsplash.com/photo-1581291518633-83b4ebd1d83e?w=600&auto=format&fit=crop",
+    color: "#FF8A65",
+    description: "From prototyping and user testing to final interface design, we shape digital products that are intuitive, beautiful, and highly functional. We deep-dive into user workflows, wireframe detailed user journeys, and construct elegant user interfaces that resolve complex user problems seamlessly.",
+    tags: ["Prototyping", "User Research", "Strategy"]
+  },
+  {
+    id: "03.",
+    title: "WEB DEVELOPMENT",
+    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&auto=format&fit=crop",
+    color: "#ECEFF1",
+    description: "From website development and e-commerce platforms to custom enterprise software and mobile apps, our development team has the expertise to build scalable solutions. We write clean, performant, and secure code using modern frameworks and standard architectures to power your digital presence.",
+    tags: ["React", "Node.js", "Scalable"]
+  },
+  {
+    id: "04.",
+    title: "MOBILE DEVELOPMENT",
+    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&auto=format&fit=crop",
+    color: "#81C784",
+    description: "Designing and building native and cross-platform mobile applications with sleek user interfaces and seamless performance. We specialize in building iOS and Android applications that leverage native hardware capabilities, run smoothly, and deliver highly interactive experiences for users on the go.",
+    tags: ["iOS", "Android", "Flutter"]
+  }
+];
+
+
+const Dashboard = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const containerRef = useRef(null);
+  const wrapperRefs = useRef([]);
+
+  useEffect(() => {
+    // Inject Plus Jakarta Sans font dynamically for premium typography
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+
+    const handleScroll = () => {
+      const newProgresses = [];
+      const stickyTop = window.innerHeight * 0.2; // 20vh sticky offset
+
+      wrapperRefs.current.forEach((wrapper, index) => {
+        if (!wrapper) return;
+        const rect = wrapper.getBoundingClientRect();
+
+        // Active row height when expanded is 360px
+        const rowHeight = 360;
+        const distance = rect.height - rowHeight - stickyTop;
+        const offset = stickyTop - rect.top;
+
+        let progress = distance > 0 ? offset / distance : 0;
+        progress = Math.min(Math.max(progress, 0), 1);
+
+        newProgresses[index] = progress;
+
+        const titleEl = document.getElementById(`title-${index}`);
+        if (titleEl) {
+          titleEl.style.setProperty('--bg-pos', `${(1 - progress) * 100}% 0%`);
+        }
+      });
+
+      // Find the active index based on progresses
+      let newActiveIndex = 0;
+      for (let i = 0; i < items.length; i++) {
+        const prog = newProgresses[i] || 0;
+        if (prog > 0 && prog < 1) {
+          newActiveIndex = i;
+          break;
+        }
+        if (prog === 1) {
+          newActiveIndex = i;
+        }
+      }
+
+      setActiveIndex(newActiveIndex);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    // Initial run
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
+  }, []);
+
+  const handleRowClick = (index) => {
+    const wrapper = document.getElementById(`wrapper-${index}`);
+    if (wrapper) {
+      const rect = wrapper.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const targetY = rect.top + scrollTop - window.innerHeight * 0.2;
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+  };
+
+  // --- Premium Inline Styles ---
+  const containerStyle = {
+    fontFamily: '"Plus Jakarta Sans", "Helvetica Neue", Arial, sans-serif',
+    maxWidth: '1100px',
+    margin: '0 auto',
+    padding: '25vh 20px 35vh',
+  };
+
+  const wrapperStyle = {
+    position: 'relative',
+    height: '110vh',
+  };
+
+  const rowStyle = (isActive) => ({
+    position: 'sticky',
+    top: '20vh',
+    display: 'flex',
+    borderTop: '1px dashed #e2e8f0',
+    padding: isActive ? '40px 0' : '28px 0',
+    height: isActive ? '360px' : '100px',
+    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+    overflow: 'hidden',
+    cursor: 'pointer',
+    backgroundColor: '#ffffff',
+    zIndex: 10,
+    boxSizing: 'border-box',
+  });
+
+  const numStyle = {
+    fontSize: '18px',
+    fontWeight: '600',
+    width: '60px',
+    paddingTop: '6px',
+    color: '#64748b',
+  };
+
+  const contentContainerStyle = {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+  };
+
+  const titleStyle = () => ({
+    fontSize: '40px',
+    fontWeight: '800',
+    margin: 0,
+    letterSpacing: '-1.5px',
+    whiteSpace: 'nowrap',
+    backgroundImage: 'linear-gradient(to right, #0f172a 50%, #cbd5e1 50%)',
+    backgroundSize: '200% 100%',
+    backgroundPosition: 'var(--bg-pos, 100% 0%)',
+    WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    transition: 'background-position 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+  });
+
+  const descriptionContainerStyle = (isActive) => ({
+    opacity: isActive ? 1 : 0,
+    transform: isActive ? 'translateY(0)' : 'translateY(15px)',
+    transition: 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+    pointerEvents: isActive ? 'auto' : 'none',
+  });
+
+  const descriptionStyle = {
+    marginTop: '16px',
+    fontSize: '15px',
+    lineHeight: '1.6',
+    color: '#475569',
+    maxWidth: '580px',
+  };
+
+  const tagContainerStyle = {
+    display: 'flex',
+    gap: '8px',
+    marginTop: '20px',
+  };
+
+  const tagStyle = {
+    fontSize: '11px',
+    fontWeight: '700',
+    backgroundColor: '#f1f5f9',
+    color: '#475569',
+    padding: '4px 10px',
+    borderRadius: '100px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  };
+
+  const actionButtonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    marginTop: '24px',
+    fontSize: '13px',
+    fontWeight: '700',
+    color: '#0f172a',
+    textDecoration: 'none',
+    borderBottom: '2px solid #0f172a',
+    paddingBottom: '4px',
+    width: 'fit-content',
+  };
+
+  const imageContainerStyle = (isActive) => ({
+    width: '38%',
+    height: '100%',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: isActive ? '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' : 'none',
+    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+  });
+
+  const imgStyle = {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  };
+
+  return (
+    <div ref={containerRef} style={containerStyle}>
+      {items.map((item, index) => {
+        const isActive = activeIndex === index;
+        return (
+          <div
+            id={`wrapper-${index}`}
+            key={index}
+            ref={el => wrapperRefs.current[index] = el}
+            style={wrapperStyle}
+          >
+            <div
+              id={`row-${index}`}
+              style={rowStyle(isActive)}
+              onClick={() => handleRowClick(index)}
+            >
+              {/* Index Number */}
+              <div style={numStyle}>{item.id}</div>
+
+              {/* Left Content Column */}
+              <div style={contentContainerStyle}>
+                <h2
+                  id={`title-${index}`}
+                  style={titleStyle()}
+                >
+                  {item.title}
+                </h2>
+
+                {/* Expandable UI Elements (Description, Tags, and Button) */}
+                <div style={descriptionContainerStyle(isActive)}>
+                  <p style={descriptionStyle}>{item.description}</p>
+                  <div style={tagContainerStyle}>
+                    {item.tags.map(tag => (
+                      <span key={tag} style={tagStyle}>{tag}</span>
+                    ))}
+                  </div>
+                  <div>
+                    <a href="#" style={actionButtonStyle}>Explore Case Study &rarr;</a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Media Column */}
+              <div style={{ ...imageContainerStyle(isActive), backgroundColor: item.color }}>
+                <img src={item.image} alt={item.title} style={imgStyle} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      {/* Bottom border line for the last accordion element */}
+      <div style={{ borderTop: '1px dashed #e2e8f0' }}></div>
+    </div>
+  );
+};
+
+export default Dashboard;
+
+
+import React, { useEffect, useRef } from 'react';
+
+const Animation = () => {
+    // Sample logo data based on your image
+    const row1Logos = ['Stoli', 'British Red Cross', 'B&O PLAY', 'Hanwag', 'Stoli', 'British Red Cross', 'B&O PLAY', 'Hanwag'];
+    const row2Logos = ['Hanwag', 'Stoli', 'British Red Cross', 'B&O PLAY', 'Hanwag', 'Stoli', 'British Red Cross', 'B&O PLAY'];
+
+    const containerRef = useRef(null);
+    const track1Ref = useRef(null);
+    const track2Ref = useRef(null);
+    const headerRef = useRef(null);
+
+    useEffect(() => {
+        // Load the premium font
+        const link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+
+        const handleScroll = () => {
+            // Fade and shift header text as user scrolls
+            if (headerRef.current) {
+                const scrollY = window.scrollY;
+                const fadeProgress = Math.min(scrollY / 400, 1); // Fades out completely after 400px of scrolling
+                headerRef.current.style.opacity = 1 - fadeProgress;
+                headerRef.current.style.transform = `translate3d(0, ${-fadeProgress * 60}px, 0)`;
+            }
+
+            const container = containerRef.current;
+            if (!container) return;
+
+            const rect = container.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+
+            // Check if the marquee container is visible within the viewport
+            if (rect.top < viewportHeight && rect.bottom > 0) {
+                // Calculate scroll progress (0 when top enters viewport, 1 when bottom leaves viewport)
+                const totalHeight = rect.height + viewportHeight;
+                const currentScroll = viewportHeight - rect.top;
+                const progress = Math.min(Math.max(currentScroll / totalHeight, 0), 1);
+
+                // Horizontal shift distance (in pixels) for the marquee parallax
+                const maxShift = 320;
+                const shift1 = -progress * maxShift;
+                const shift2 = (progress - 1) * maxShift;
+
+                if (track1Ref.current) {
+                    track1Ref.current.style.transform = `translateX(${shift1}px)`;
+                }
+                if (track2Ref.current) {
+                    track2Ref.current.style.transform = `translateX(${shift2}px)`;
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll(); // Initial run on mount
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (document.head.contains(link)) {
+                document.head.removeChild(link);
+            }
+        };
+    }, []);
+
+    return (
+        <div style={{ fontFamily: '"Plus Jakarta Sans", "Helvetica Neue", sans-serif', backgroundColor: '#fafafa', color: '#1e293b' }}>
+            {/* Top Spacer Section */}
+            <div
+                ref={headerRef}
+                style={{
+                    height: '80vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '0 20px',
+                    textAlign: 'center',
+                    willChange: 'transform, opacity',
+                }}
+            >
+                <h1 style={{
+                    fontSize: 'clamp(2rem, 7.5vw, 6.5rem)',
+                    fontWeight: 900,
+                    margin: '0 0 24px',
+                    letterSpacing: 'clamp(-1px, -0.4vw, -2.5px)',
+                    color: '#334155',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    lineHeight: '1',
+                    textTransform: 'uppercase'
+                }}>
+                    {"Parallax Scroll Showcase".split(" ").map((word, wordIndex) => (
+                        <span
+                            key={wordIndex}
+                            style={{
+                                display: 'inline-block',
+                                whiteSpace: 'nowrap',
+                                marginRight: '0.25em'
+                            }}
+                        >
+                            {word.split("").map((char, charIndex) => (
+                                <span
+                                    key={charIndex}
+                                    style={{
+                                        display: 'inline-block',
+                                        opacity: 0,
+                                        animation: 'wordFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                                        // Slower stagger within the word and between words
+                                        animationDelay: `${wordIndex * 0.8 + charIndex * 0.1}s`,
+                                    }}
+                                >
+                                    {char}
+                                </span>
+                            ))}
+                        </span>
+                    ))}
+                </h1>
+                <p style={{ fontSize: 'clamp(1rem, 3vw, 1.2rem)', color: '#64748b', margin: '0 0 8px', maxWidth: '600px', lineHeight: 1.6 }}>
+                    Scroll down smoothly to see the logos slide horizontally in opposite directions linked directly to your scroll position.
+                </p>
+                <div style={{ marginTop: '40px', fontSize: '2rem', animation: 'bounce 2s infinite' }}>
+                    &darr;
+                </div>
+            </div>
+
+            {/* Marquee Section */}
+            <div ref={containerRef} className="marquee-container">
+                {/* Injecting CSS directly via React style tag */}
+                <style>{`
+                    html, body {
+                      overflow-x: hidden;
+                      width: 100%;
+                      margin: 0;
+                      padding: 0;
+                    }
+
+                    .marquee-container {
+                      display: flex;
+                      flex-direction: column;
+                      gap: 24px;
+                      padding: 80px 0;
+                      background-color: #f1f5f9;
+                      overflow: hidden;
+                      width: 100%;
+                      border-top: 1px solid #e2e8f0;
+                      border-bottom: 1px solid #e2e8f0;
+                    }
+
+                    .marquee-row {
+                      display: flex;
+                      width: 100%;
+                      overflow: hidden;
+                    }
+
+                    .marquee-track {
+                      display: flex;
+                      gap: 24px;
+                      padding-left: 20px;
+                      will-change: transform;
+                    }
+
+                    .logo-card {
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      width: 280px;
+                      height: 140px;
+                      background: #ffffff;
+                      border-radius: 20px;
+                      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+                      font-weight: 700;
+                      color: #0f172a;
+                      font-size: 1.25rem;
+                      letter-spacing: -0.5px;
+                      border: 1px solid rgba(15, 23, 42, 0.03);
+                      transition: all 0.3s ease;
+                      user-select: none;
+                    }
+
+                    .logo-card:hover {
+                      transform: translateY(-5px);
+                      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+                      border-color: rgba(15, 23, 42, 0.08);
+                    }
+
+                    @keyframes bounce {
+                      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                      40% { transform: translateY(-10px); }
+                      60% { transform: translateY(-5px); }
+                    }
+
+                    @keyframes wordFadeIn {
+                      from {
+                        opacity: 0;
+                      }
+                      to {
+                        opacity: 1;
+                      }
+                    }
+
+                    @media (max-width: 768px) {
+                      .marquee-container {
+                        gap: 16px;
+                        padding: 40px 0;
+                      }
+                      .marquee-track {
+                        gap: 16px;
+                        padding-left: 12px;
+                      }
+                      .logo-card {
+                        width: 180px;
+                        height: 90px;
+                        border-radius: 12px;
+                        font-size: 0.95rem;
+                        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+                      }
+                    }
+                `}</style>
+
+                {/* Row 1: Sliding Left */}
+                <div className="marquee-row">
+                    <div ref={track1Ref} className="marquee-track">
+                        {row1Logos.map((logo, index) => (
+                            <div key={`r1-${index}`} className="logo-card">{logo}</div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Row 2: Sliding Right */}
+                <div className="marquee-row">
+                    <div ref={track2Ref} className="marquee-track">
+                        {row2Logos.map((logo, index) => (
+                            <div key={`r2-${index}`} className="logo-card">{logo}</div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Spacer Section */}
+            <div style={{
+                height: '80vh',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: '#94a3b8',
+                fontSize: '1.1rem'
+            }}>
+                End of Scroll Showcase. Scroll back up to reverse the motion.
+            </div>
+        </div>
+    );
+}
+
+export default Animation;
+
+import React, { useState, useEffect, useRef } from 'react';
+
+const slidesData = [
+    {
+        id: 1,
+        title: "Explore the Unknown",
+        bgText: "EXPLORE",
+        img: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1600&auto=format&fit=crop"
+    },
+    {
+        id: 2,
+        title: "Chasing the Horizon",
+        bgText: "HORIZON",
+        img: "https://images.unsplash.com/photo-150725428034-b723cf961d3e?w=1600&auto=format&fit=crop"
+    },
+    {
+        id: 3,
+        title: "The Journey Ends",
+        bgText: "JOURNEY",
+        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1600&auto=format&fit=crop"
+    }
+];
+
+const Animation3 = () => {
+    const containerRef = useRef(null);
+    const [scrollProgress, setScrollProgress] = useState(0);
+    const [slideVisibilities, setSlideVisibilities] = useState([]);
+
+    useEffect(() => {
+        // Load modern Google font
+        const link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+
+        const handleScroll = () => {
+            if (!containerRef.current) return;
+
+            const container = containerRef.current;
+            const rect = container.getBoundingClientRect();
+
+            // Calculate overall progress of the entire container (0 to 1)
+            const totalHeight = rect.height - window.innerHeight;
+            const scrolled = -rect.top;
+            const progress = Math.max(0, Math.min(1, scrolled / totalHeight));
+            setScrollProgress(progress);
+
+            // Calculate individual visibility factors for each slide
+            const visibilities = slidesData.map((_, index) => {
+                const slideLeft = (index * window.innerWidth) - (progress * (slidesData.length - 1) * window.innerWidth);
+                const slideCenter = slideLeft + (window.innerWidth / 2);
+                const viewCenter = window.innerWidth / 2;
+                const distanceFromCenter = Math.abs(slideCenter - viewCenter);
+
+                // 1 when perfectly centered, 0 when off-screen
+                const factor = Math.max(0, 1 - (distanceFromCenter / (window.innerWidth * 0.8)));
+                return factor;
+            });
+
+            setSlideVisibilities(visibilities);
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll(); // Initial run
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (document.head.contains(link)) {
+                document.head.removeChild(link);
+            }
+        };
+    }, []);
+
+    // --- Premium Inline Styles ---
+    const containerStyle = {
+        position: 'relative',
+        height: `${slidesData.length * 100}vh`,
+        backgroundColor: '#050505',
+        fontFamily: '"Plus Jakarta Sans", "Helvetica Neue", sans-serif',
+    };
+
+    const stickyWrapperStyle = {
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        overflow: 'hidden',
+    };
+
+    const trackStyle = {
+        display: 'flex',
+        width: `${slidesData.length * 100}vw`,
+        height: '100%',
+        transform: `translateX(-${scrollProgress * (slidesData.length - 1) * 100}vw)`,
+        willChange: 'transform',
+        transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+    };
+
+    const slideStyle = {
+        position: 'relative',
+        width: '100vw',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    };
+
+    const bgImageStyle = (imgUrl, visibilityFactor = 0) => ({
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundImage: `url(${imgUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        zIndex: 0,
+        opacity: 0.12 + (visibilityFactor * 0.48),
+        transform: `scale(${1.05 - (visibilityFactor * 0.05)})`,
+        transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'transform, opacity',
+    });
+
+    const bgTextStyle = (visibilityFactor = 0) => ({
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: `translate(-50%, -50%) translateX(${(0.5 - visibilityFactor) * 240}px)`,
+        fontSize: '13vw',
+        fontWeight: '900',
+        textTransform: 'uppercase',
+        color: 'transparent',
+        WebkitTextStroke: '1.5px rgba(255, 255, 255, 0.07)',
+        zIndex: 1,
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        opacity: Math.min(1, visibilityFactor * 1.5),
+        transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'transform, opacity',
+    });
+
+    const contentStyle = (visibilityFactor = 0) => ({
+        position: 'relative',
+        zIndex: 2,
+        color: '#ffffff',
+        textAlign: 'center',
+        opacity: visibilityFactor,
+        transform: `translateY(${(1 - visibilityFactor) * 30}px)`,
+        transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+        willChange: 'transform, opacity',
+    });
+
+    const titleStyle = {
+        fontSize: '4.5rem',
+        fontWeight: '800',
+        margin: '0 0 16px',
+        letterSpacing: '-2px',
+        textShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+    };
+
+    const progressBarStyle = {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '4px',
+        width: `${scrollProgress * 100}%`,
+        backgroundColor: '#ffffff',
+        zIndex: 10,
+        transition: 'width 0.1s ease-out',
+    };
+
+    const navIndicatorStyle = {
+        position: 'fixed',
+        bottom: '40px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        display: 'flex',
+        gap: '12px',
+        zIndex: 10,
+        padding: '8px 16px',
+        borderRadius: '30px',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+    };
+
+    const dotStyle = (isActive) => ({
+        width: isActive ? '24px' : '8px',
+        height: '8px',
+        borderRadius: '4px',
+        backgroundColor: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.3)',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+    });
+
+    const activeIndex = Math.min(
+        slidesData.length - 1,
+        Math.max(0, Math.round(scrollProgress * (slidesData.length - 1)))
+    );
+
+    return (
+        <div ref={containerRef} style={containerStyle}>
+            {/* Scroll Progress Line */}
+            <div style={progressBarStyle} />
+
+            <div style={stickyWrapperStyle}>
+                <div style={trackStyle}>
+                    {slidesData.map((slide, index) => {
+                        const visibility = slideVisibilities[index] || 0;
+                        return (
+                            <section key={slide.id} style={slideStyle}>
+                                {/* Background zoom and fade */}
+                                <div style={bgImageStyle(slide.img, visibility)} />
+
+                                {/* Giant outline marquee text parallax */}
+                                <div style={bgTextStyle(visibility)}>
+                                    {slide.bgText}
+                                </div>
+
+                                {/* Foreground active content */}
+                                <div style={contentStyle(visibility)}>
+                                    <h2 style={titleStyle}>{slide.title}</h2>
+                                    <p style={{ fontSize: '1.1rem', color: 'rgba(255, 255, 255, 0.7)', margin: 0 }}>
+                                        Slide 0{index + 1} &mdash; Scroll to explore
+                                    </p>
+                                </div>
+                            </section>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Interactive Progress Dots */}
+            <div style={navIndicatorStyle}>
+                {slidesData.map((_, index) => (
+                    <div
+                        key={index}
+                        style={dotStyle(activeIndex === index)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default Animation3;
+
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+const Gemini = () => {
+    const [activeMode, setActiveMode] = useState('chat'); // 'chat' or 'image'
+    const [messages, setMessages] = useState([
+        { role: 'gemini', text: "Hello! I am Gemini. Ask me anything, and I'll generate a response while tracking our token and request usage." }
+    ]);
+    const [input, setInput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [modelName, setModelName] = useState('gemini-2.5-flash');
+    const [imageModel, setImageModel] = useState('gemini-2.5-flash');
+    const [imageSize, setImageSize] = useState('1:1');
+    const [stats, setStats] = useState({
+        used: 0,
+        remaining: 4000000,
+        requests: 0
+    });
+    const [errorMsg, setErrorMsg] = useState('');
+    const messagesEndRef = useRef(null);
+
+    const API_BASE_URL = 'http://localhost:8000';
+
+    // Fetch usage stats from the backend
+    const fetchStats = async () => {
+        try {
+            setErrorMsg('');
+            const res = await axios.get(`${API_BASE_URL}/api/chat/stats`);
+            if (res.data && res.data.stats) {
+                setStats(res.data.stats);
+            } else if (res.data) {
+                setStats(res.data);
+            }
+        } catch (err) {
+            console.error("Error fetching stats:", err);
+            setErrorMsg("Could not connect to API server at port 8000. Make sure the backend service is running!");
+        }
+    };
+
+    // Auto-scroll to bottom of chat
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    // Initial load of stats
+    useEffect(() => {
+        fetchStats();
+    }, []);
+
+    // Handle sending a message
+    const handleSend = async (e) => {
+        if (e) e.preventDefault();
+        if (!input.trim() || loading) return;
+
+        const userMessage = input.trim();
+        setInput('');
+        setMessages(prev => [...prev, { role: 'user', text: userMessage }]);
+        setLoading(true);
+        setErrorMsg('');
+
+        if (activeMode === 'image') {
+            try {
+                const res = await axios.post(`${API_BASE_URL}/api/chat/generate-image`, {
+                    prompt: userMessage,
+                    modelName: imageModel,
+                    size: imageSize
+                });
+
+                const { image, provider } = res.data;
+
+                setMessages(prev => [...prev, {
+                    role: 'gemini',
+                    text: `Here is the generated image for: *"${userMessage}"*`,
+                    image: image,
+                    provider: provider
+                }]);
+                fetchStats();
+            } catch (err) {
+                console.error("Error generating image:", err);
+                const errMsg = err.response?.data?.error || err.message || "Failed to generate image.";
+                setMessages(prev => [...prev, { role: 'gemini', text: `⚠️ **Error:** ${errMsg}` }]);
+                setErrorMsg("Request failed. Ensure the server at port 8000 is active.");
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        try {
+            const res = await axios.post(`${API_BASE_URL}/api/chat`, {
+                prompt: userMessage,
+                modelName: modelName
+            });
+
+            const { reply, stats: updatedStats } = res.data;
+
+            setMessages(prev => [...prev, { role: 'gemini', text: reply }]);
+            if (updatedStats) {
+                setStats(updatedStats);
+            } else {
+                fetchStats();
+            }
+        } catch (err) {
+            console.error("Error generating response:", err);
+            const errMsg = err.response?.data?.error || err.message || "Failed to communicate with Gemini API.";
+            setMessages(prev => [...prev, { role: 'gemini', text: `⚠️ **Error:** ${errMsg}` }]);
+            setErrorMsg("Request failed. Ensure the server at port 8000 is active.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
+    const clearChat = () => {
+        setMessages([
+            { role: 'gemini', text: "Chat history cleared. Ask me anything!" }
+        ]);
+    };
+
+    const tokenLimit = 4000000;
+    const usagePercentage = Math.min(100, ((stats?.used ?? 0) / tokenLimit) * 100);
+
+    return (
+        <div className="gemini-page">
+            {/* Embedded styles for modern premium white/light theme */}
+            <style>{`
+                .gemini-page {
+                    display: flex;
+                    flex-direction: row;
+                    height: 100vh;
+                    background-color: #f8fafc;
+                    color: #0f172a;
+                    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                    overflow: hidden;
+                    box-sizing: border-box;
+                }
+
+                /* Sidebar Panel */
+                .stats-sidebar {
+                    width: 270px;
+                    background: #ffffff;
+                    border-right: 1px solid #e2e8f0;
+                    padding: 14px 12px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                    box-sizing: border-box;
+                    height: 100%;
+                    overflow: hidden; /* Lock sidebar to exactly screen size without overflow */
+                }
+
+                .sidebar-title {
+                    font-size: 1.2rem;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: -0.5px;
+                    margin: 0;
+                }
+
+                .panel-card {
+                    background: #f1f5f9;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    padding: 10px 12px;
+                }
+
+                .panel-label {
+                    font-size: 0.7rem;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 2px;
+                }
+
+                .panel-value {
+                    font-size: 1.15rem;
+                    font-weight: 700;
+                    color: #0f172a;
+                }
+
+                /* Usage meter visual */
+                .usage-bar-container {
+                    width: 100%;
+                    height: 5px;
+                    background: #e2e8f0;
+                    border-radius: 3px;
+                    overflow: hidden;
+                    margin: 6px 0;
+                }
+
+                .usage-bar {
+                    height: 100%;
+                    background: linear-gradient(90deg, #2563eb 0%, #7c3aed 100%);
+                    transition: width 0.5s ease-in-out;
+                }
+
+                /* Model Picker */
+                .model-select {
+                    width: 100%;
+                    padding: 8px;
+                    background: #ffffff;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    color: #0f172a;
+                    font-size: 0.8rem;
+                    cursor: pointer;
+                    outline: none;
+                    transition: all 0.3s ease;
+                }
+                .model-select:focus {
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
+                }
+
+                /* Actions */
+                .action-btn {
+                    padding: 8px;
+                    border: 1px solid #e2e8f0;
+                    background: #ffffff;
+                    color: #334155;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    font-size: 0.8rem;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 6px;
+                    transition: all 0.2s ease;
+                }
+                .action-btn:hover {
+                    background: #f1f5f9;
+                    border-color: #cbd5e1;
+                }
+                .btn-danger:hover {
+                    background: #fee2e2;
+                    border-color: #fca5a5;
+                    color: #991b1b;
+                }
+
+                /* Main Chat Section */
+                .chat-container {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    background: #ffffff;
+                    height: 100%;
+                    overflow: hidden;
+                    position: relative;
+                }
+
+                /* Header banner */
+                .chat-header {
+                    height: 70px;
+                    border-bottom: 1px solid #e2e8f0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0 30px;
+                    background: #ffffff;
+                }
+
+                .status-indicator {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 0.85rem;
+                    color: #64748b;
+                }
+
+                .indicator-dot {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background: #22c55e;
+                    box-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+                }
+                .indicator-dot.offline {
+                    background: #ef4444;
+                    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+                }
+
+                /* Messages area */
+                .messages-area {
+                    flex: 1;
+                    padding: 30px;
+                    overflow-y: auto;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                    background: #f8fafc;
+                }
+
+                /* Customize scrollbar */
+                .messages-area::-webkit-scrollbar, .stats-sidebar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .messages-area::-webkit-scrollbar-track, .stats-sidebar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .messages-area::-webkit-scrollbar-thumb, .stats-sidebar::-webkit-scrollbar-thumb {
+                    background: #cbd5e1;
+                    border-radius: 3px;
+                }
+                .messages-area::-webkit-scrollbar-thumb:hover, .stats-sidebar::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
+
+                .message-bubble {
+                    max-width: 80%;
+                    padding: 16px 20px;
+                    border-radius: 18px;
+                    line-height: 1.6;
+                    font-size: 0.95rem;
+                    animation: fadeInUp 0.4s ease forwards;
+                    box-sizing: border-box;
+                }
+
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(10px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .message-bubble.user {
+                    align-self: flex-end;
+                    background: #2563eb;
+                    color: #ffffff;
+                    border-bottom-right-radius: 4px;
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+                }
+
+                .message-bubble.gemini {
+                    align-self: flex-start;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    color: #1e293b;
+                    border-bottom-left-radius: 4px;
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+                }
+
+                /* Markdown rendering styles */
+                .message-bubble p {
+                    margin: 0 0 12px;
+                }
+                .message-bubble p:last-child {
+                    margin-bottom: 0;
+                }
+                .message-bubble pre {
+                    margin: 12px 0;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    border: 1px solid #e2e8f0;
+                }
+                .message-bubble code {
+                    font-family: 'Fira Code', Consolas, Monaco, monospace;
+                    font-size: 0.85rem;
+                    background: #f1f5f9;
+                    color: #0f172a;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                }
+                .message-bubble pre code {
+                    padding: 0;
+                    background: transparent;
+                }
+
+                /* Input Area */
+                .input-container {
+                    padding: 24px 30px;
+                    background: #ffffff;
+                    border-top: 1px solid #e2e8f0;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+
+                .input-row {
+                    display: flex;
+                    gap: 16px;
+                    background: #f8fafc;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 14px;
+                    padding: 8px 12px 8px 20px;
+                    align-items: center;
+                    transition: all 0.3s ease;
+                }
+                .input-row:focus-within {
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+                    background: #ffffff;
+                }
+
+                .chat-input {
+                    flex: 1;
+                    background: transparent;
+                    border: none;
+                    color: #0f172a;
+                    font-size: 0.95rem;
+                    outline: none;
+                    resize: none;
+                    min-height: 24px;
+                    max-height: 120px;
+                    padding: 8px 0;
+                    font-family: inherit;
+                }
+
+                .send-btn {
+                    padding: 10px 20px;
+                    background: #2563eb;
+                    color: #fff;
+                    border: none;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 0.9rem;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .send-btn:hover {
+                    background: #1d4ed8;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                }
+                .send-btn:disabled {
+                    background: #cbd5e1;
+                    color: #94a3b8;
+                    cursor: not-allowed;
+                    transform: none;
+                    box-shadow: none;
+                }
+
+                /* Loader and Info Alerts */
+                .typing-indicator {
+                    display: flex;
+                    gap: 4px;
+                    align-items: center;
+                    padding: 4px 8px;
+                }
+                .typing-dot {
+                    width: 6px;
+                    height: 6px;
+                    background: #94a3b8;
+                    border-radius: 50%;
+                    animation: typingPulse 1.4s infinite ease-in-out;
+                }
+                .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+                .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+                @keyframes typingPulse {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-4px); }
+                }
+
+                .error-banner {
+                    background: #fef2f2;
+                    border: 1px solid #fecaca;
+                    border-radius: 10px;
+                    padding: 12px 16px;
+                    color: #b91c1c;
+                    font-size: 0.85rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+
+                /* Mode Tabs */
+                .mode-tabs {
+                    display: flex;
+                    gap: 4px;
+                    background: #f1f5f9;
+                    padding: 4px;
+                    border-radius: 10px;
+                    border: 1px solid #e2e8f0;
+                }
+
+                .mode-tab {
+                    padding: 6px 14px;
+                    background: transparent;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    color: #64748b;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .mode-tab:hover {
+                    color: #0f172a;
+                }
+
+                .mode-tab.active {
+                    background: #ffffff;
+                    color: #2563eb;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+                }
+
+                /* Image Card Styles */
+                .generated-image-card {
+                    margin-top: 10px;
+                    background: #ffffff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+                    max-width: 100%;
+                }
+                .generated-img {
+                    width: 100%;
+                    height: auto;
+                    display: block;
+                }
+                .image-card-footer {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 14px;
+                    background: #f8fafc;
+                    border-top: 1px solid #e2e8f0;
+                }
+                .provider-tag {
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                .download-image-btn {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #2563eb;
+                    text-decoration: none;
+                    transition: color 0.2s ease;
+                }
+                .download-image-btn:hover {
+                    color: #1d4ed8;
+                }
+
+                /* Ratio Picker Grid */
+                .ratio-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 6px;
+                    margin-top: 6px;
+                }
+                .ratio-btn {
+                    padding: 6px;
+                    background: #ffffff;
+                    border: 1px solid #cbd5e1;
+                    border-radius: 6px;
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #475569;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    text-align: center;
+                }
+                .ratio-btn:hover {
+                    background: #f8fafc;
+                    border-color: #94a3b8;
+                }
+                .ratio-btn.active {
+                    background: #2563eb;
+                    color: #ffffff;
+                    border-color: #2563eb;
+                }
+
+                /* Responsive design */
+                @media (max-width: 768px) {
+                    .gemini-page {
+                        flex-direction: column;
+                        height: 100vh;
+                    }
+                    .stats-sidebar {
+                        width: 100%;
+                        height: auto;
+                        max-height: 250px;
+                        border-right: none;
+                        border-bottom: 1px solid #e2e8f0;
+                        padding: 16px;
+                        gap: 12px;
+                    }
+                    .chat-header {
+                        padding: 0 20px;
+                        height: 60px;
+                    }
+                    .messages-area {
+                        padding: 20px;
+                    }
+                    .message-bubble {
+                        max-width: 90%;
+                    }
+                    .input-container {
+                        padding: 16px 20px;
+                    }
+                }
+            `}</style>
+
+            {/* Sidebar Stats Panel */}
+            <aside className="stats-sidebar">
+                <div>
+                    <h2 className="sidebar-title">Gemini Monitor</h2>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', margin: 0 }}>
+                        Real-time token usage tracker
+                    </p>
+                </div>
+
+                {activeMode === 'chat' ? (
+                    <div className="panel-card">
+                        <div className="panel-label">Model Engine</div>
+                        <select
+                            className="model-select"
+                            value={modelName}
+                            onChange={(e) => setModelName(e.target.value)}
+                        >
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        </select>
+                    </div>
+                ) : (
+                    <>
+                        <div className="panel-card">
+                            <div className="panel-label">Image Model</div>
+                            <select
+                                className="model-select"
+                                value={imageModel}
+                                onChange={(e) => setImageModel(e.target.value)}
+                            >
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                <option value="imagen-4.0-generate-001">Imagen 4.0</option>
+                                <option value="imagen-3.0-generate-002">Imagen 3.0</option>
+                            </select>
+                        </div>
+                        <div className="panel-card">
+                            <div className="panel-label">Aspect Ratio</div>
+                            <div className="ratio-grid">
+                                {['1:1', '16:9', '9:16', '4:3', '3:4'].map(size => (
+                                    <button
+                                        key={size}
+                                        type="button"
+                                        className={`ratio-btn ${imageSize === size ? 'active' : ''}`}
+                                        onClick={() => setImageSize(size)}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                <div className="panel-card">
+                    <div className="panel-label">Tokens Used Today</div>
+                    <div className="panel-value">{(stats?.used ?? 0).toLocaleString()}</div>
+                    <div className="usage-bar-container">
+                        <div className="usage-bar" style={{ width: `${usagePercentage}%` }}></div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#64748b' }}>
+                        <span>{usagePercentage.toFixed(1)}% Used</span>
+                        <span>4M Limit</span>
+                    </div>
+                </div>
+
+                <div className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div>
+                        <div className="panel-label">Tokens Remaining</div>
+                        <div className="panel-value" style={{ color: '#22c55e', fontSize: '1.15rem' }}>
+                            {(stats?.remaining ?? 0).toLocaleString()}
+                        </div>
+                    </div>
+                    <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '4px 0' }} />
+                    <div>
+                        <div className="panel-label">Requests Made</div>
+                        <div className="panel-value" style={{ fontSize: '1.15rem' }}>
+                            {stats?.requests ?? 0}
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: 'auto' }}>
+                    <button className="action-btn" onClick={fetchStats}>
+                        🔄 Refresh Stats
+                    </button>
+                    <button className="action-btn btn-danger" onClick={clearChat}>
+                        🗑️ Clear Chat
+                    </button>
+                </div>
+            </aside>
+
+            {/* Main Chat Panel */}
+            <main className="chat-container">
+                <header className="chat-header">
+                    <div>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Gemini Hub</h3>
+                    </div>
+                    <div className="mode-tabs">
+                        <button
+                            type="button"
+                            className={`mode-tab ${activeMode === 'chat' ? 'active' : ''}`}
+                            onClick={() => {
+                                setActiveMode('chat');
+                                setErrorMsg('');
+                            }}
+                        >
+                            💬 Chat
+                        </button>
+                        <button
+                            type="button"
+                            className={`mode-tab ${activeMode === 'image' ? 'active' : ''}`}
+                            onClick={() => {
+                                setActiveMode('image');
+                                setErrorMsg('');
+                            }}
+                        >
+                            🎨 Image Gen
+                        </button>
+                    </div>
+                    <div className="status-indicator">
+                        <span className={`indicator-dot ${errorMsg ? 'offline' : ''}`}></span>
+                        <span>{errorMsg ? 'Offline' : 'Connected'}</span>
+                    </div>
+                </header>
+
+                <div className="messages-area">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`message-bubble ${msg.role}`}>
+                            <ReactMarkdown
+                                components={{
+                                    code({ node, inline, className, children, ...props }) {
+                                        const match = /language-(\w+)/.exec(className || '');
+                                        return !inline && match ? (
+                                            <SyntaxHighlighter
+                                                style={vscDarkPlus}
+                                                language={match[1]}
+                                                PreTag="div"
+                                                {...props}
+                                            >
+                                                {String(children).replace(/\n$/, '')}
+                                            </SyntaxHighlighter>
+                                        ) : (
+                                            <code className={className} {...props}>
+                                                {children}
+                                            </code>
+                                        );
+                                    }
+                                }}
+                            >
+                                {msg.text}
+                            </ReactMarkdown>
+                            {msg.image && (
+                                <div className="generated-image-card">
+                                    <img src={msg.image} alt="Generated result" className="generated-img" />
+                                    <div className="image-card-footer">
+                                        <span className="provider-tag">{msg.provider === 'imagen' ? 'Google Imagen' : 'Flux (Pollinations)'}</span>
+                                        <a href={msg.image} download={`generated-image-${index}.jpg`} className="download-image-btn">
+                                            💾 Download
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                    {loading && (
+                        <div className="message-bubble gemini" style={{ padding: '12px 18px' }}>
+                            <div className="typing-indicator">
+                                <div className="typing-dot"></div>
+                                <div className="typing-dot"></div>
+                                <div className="typing-dot"></div>
+                            </div>
+                        </div>
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <div className="input-container">
+                    {errorMsg && (
+                        <div className="error-banner">
+                            <span>{errorMsg}</span>
+                            <button
+                                style={{ background: 'none', border: 'none', color: '#fca5a5', cursor: 'pointer', fontWeight: 'bold' }}
+                                onClick={fetchStats}
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSend} className="input-row">
+                        <textarea
+                            className="chat-input"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={activeMode === 'image' ? "Describe the image you want to generate..." : "Type a message or prompt..."}
+                            rows="1"
+                            disabled={loading}
+                        />
+                        <button type="submit" className="send-btn" disabled={loading || !input.trim()}>
+                            {loading ? 'Processing...' : (activeMode === 'image' ? 'Generate' : 'Send')}
+                        </button>
+                    </form>
+                </div>
+            </main>
+        </div>
+    );
+};
+
+export default Gemini;
+
+
+import React, { useEffect, useRef } from 'react';
+
+const SmoothScroll = ({ children }) => {
+    const targetY = useRef(0);
+    const currentY = useRef(0);
+    const ease = 0.08; // Adjust between 0.05 and 0.12 to fine-tune glide inertia (lower = slower/smoother)
+
+    useEffect(() => {
+        // Initialize position to current scroll position
+        targetY.current = window.scrollY;
+        currentY.current = window.scrollY;
+
+        const handleWheel = (e) => {
+            // Prevent browser's instant scroll behavior
+            e.preventDefault();
+
+            // Calculate current maximum scrollable height
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+
+            // Increment target scroll position by wheel delta
+            targetY.current = Math.max(0, Math.min(maxScroll, targetY.current + e.deltaY));
+        };
+
+        const handleScroll = () => {
+            // Sync variables if scrolling was triggered by native actions (scrollbar drag, keyboard, hash link)
+            if (Math.abs(window.scrollY - currentY.current) > 1.5) {
+                targetY.current = window.scrollY;
+                currentY.current = window.scrollY;
+            }
+        };
+
+        // Bind wheel event as non-passive to allow e.preventDefault()
+        window.addEventListener('wheel', handleWheel, { passive: false });
+        window.addEventListener('scroll', handleScroll, { passive: true });
+
+        let rafId;
+        const tick = () => {
+            // Linear interpolation (lerp) for smooth glide
+            const diff = targetY.current - currentY.current;
+            currentY.current += diff * ease;
+
+            if (Math.abs(diff) < 0.05) {
+                currentY.current = targetY.current;
+            } else {
+                // Scroll window natively to the smoothed position
+                window.scrollTo(0, currentY.current);
+            }
+
+            rafId = requestAnimationFrame(tick);
+        };
+
+        tick();
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            window.removeEventListener('wheel', handleWheel);
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
+    return <>{children}</>;
+};
+
+export default SmoothScroll;
+
+
+import React, { Suspense, lazy } from "react";
+import { Routes, Route } from "react-router-dom";
+import SmoothScroll from "./smoothScroll";
+
+const Home = lazy(() => import("./pages/Home"));
+const Llm = lazy(() => import("./pages/Llm"));
+const Dashboard = lazy(() => import("./Dashboard"));
+const Animation = lazy(() => import("./Animation"));
+const Animation2 = lazy(() => import("./Animation2"));
+const Gemini = lazy(() => import("./gemini"));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SmoothScroll>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/chat" element={<Llm />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/animation" element={<Animation />} />
+          <Route path="/animations" element={<Animation2 />} />
+          <Route path="/gemini" element={<Gemini />} />
+        </Routes>
+      </SmoothScroll>
+    </Suspense>
+  );
+}
+
+export default App;
+
+
+dev.env
+# ---------------- COMMON ----------------
+NODE_ENV=development
+DATABASE=mongodb://rajshetye5855:dWJcpGLK4w32HYWw@ac-wc1knan-shard-00-00.lhcbwfk.mongodb.net:27017,ac-wc1knan-shard-00-01.lhcbwfk.mongodb.net:27017,ac-wc1knan-shard-00-02.lhcbwfk.mongodb.net:27017/authecomproduct?ssl=true&replicaSet=atlas-12392u-shard-0&authSource=admin&appName=Cluster0
+JWT_SECRET=qwertyuioplkjhgfdsazxcvbnmfdshsdjkl
+JWT_EXPIRES_IN=1d
+
+# ---------------- SERVICE PORTS ----------------
+AUTH_PORT=8080
+USER_PORT=8082
+PRODUCT_PORT=8083
+CART_PORT=5004
+ORDER_PORT=5005
+PAYMENT_PORT=5006
+ROLE_PORT=5007
+GATEWAY_PORT=3000
+
+# ---------------- SERVICE URLs ----------------
+AUTH_SERVICE_URL=http://localhost:8080
+USER_SERVICE_URL=http://localhost:8082
+PRODUCT_SERVICE_URL=http://localhost:8083
+CART_SERVICE_URL=http://localhost:5004
+ORDER_SERVICE_URL=http://localhost:5005
+PAYMENT_SERVICE_URL=http://localhost:5006
+ROLE_SERVICE_URL=http://localhost:5007
+
+# ---------------- AUTH SERVICE SPECIFIC ----------------
+REFRESH_TOKEN_SECRET=oiuytgfdsazxcvbnmfdshsdjkl
+REFRESH_TOKEN_EXPIRES_IN=7d
+OTP_EXPIRY_MINUTES=5
+BCRYPT_SALT_ROUNDS=10
+
+# ---------------- GATEWAY SPECIFIC ----------------
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=100
+
+# ---------------- PAYMENT SERVICE SPECIFIC ----------------
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
+
+
+prod.env
+# ---------------- COMMON ----------------
+NODE_ENV=production
+DATABASE=mongodb://prod_user:prod_pass@cluster.mongodb.net/prod_db
+JWT_SECRET=prod_jwt_secret
+JWT_EXPIRES_IN=1d
+
+# ---------------- SERVICE PORTS ----------------
+AUTH_PORT=80
+USER_PORT=80
+PRODUCT_PORT=80
+CART_PORT=80
+ORDER_PORT=80
+PAYMENT_PORT=80
+GATEWAY_PORT=80
+
+# ---------------- SERVICE URLs (Update with production domain) ----------------
+AUTH_SERVICE_URL=https://api.example.com/auth
+USER_SERVICE_URL=https://api.example.com/user
+PRODUCT_SERVICE_URL=https://api.example.com/product
+CART_SERVICE_URL=https://api.example.com/cart
+ORDER_SERVICE_URL=https://api.example.com/order
+PAYMENT_SERVICE_URL=https://api.example.com/payment
+
+# ---------------- AUTH SERVICE SPECIFIC ----------------
+REFRESH_TOKEN_SECRET=prod_refresh_secret
+REFRESH_TOKEN_EXPIRES_IN=7d
+OTP_EXPIRY_MINUTES=5
+BCRYPT_SALT_ROUNDS=10
+
+# ---------------- GATEWAY SPECIFIC ----------------
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=100
+
+# ---------------- PAYMENT SERVICE SPECIFIC ----------------
+RAZORPAY_KEY_ID=prod_razorpay_key
+RAZORPAY_KEY_SECRET=prod_razorpay_secret
+
+
+staging.env
+# ---------------- COMMON ----------------
+NODE_ENV=staging
+DATABASE=mongodb://staging_user:staging_pass@cluster.mongodb.net/staging_db
+JWT_SECRET=staging_jwt_secret
+JWT_EXPIRES_IN=1d
+
+# ---------------- SERVICE PORTS ----------------
+AUTH_PORT=8080
+USER_PORT=8082
+PRODUCT_PORT=8083
+CART_PORT=5004
+ORDER_PORT=5005
+PAYMENT_PORT=5006
+GATEWAY_PORT=3000
+
+# ---------------- SERVICE URLs (Update with staging domain) ----------------
+AUTH_SERVICE_URL=http://staging-auth:8080
+USER_SERVICE_URL=http://staging-user:8082
+PRODUCT_SERVICE_URL=http://staging-product:8083
+CART_SERVICE_URL=http://staging-cart:5004
+ORDER_SERVICE_URL=http://staging-order:5005
+PAYMENT_SERVICE_URL=http://staging-payment:5006
+
+# ---------------- AUTH SERVICE SPECIFIC ----------------
+REFRESH_TOKEN_SECRET=staging_refresh_secret
+REFRESH_TOKEN_EXPIRES_IN=7d
+OTP_EXPIRY_MINUTES=5
+BCRYPT_SALT_ROUNDS=10
+
+# ---------------- GATEWAY SPECIFIC ----------------
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX=100
+
+# ---------------- PAYMENT SERVICE SPECIFIC ----------------
+RAZORPAY_KEY_ID=staging_razorpay_key
+RAZORPAY_KEY_SECRET=staging_razorpay_secret
